@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My LegalHub - 个人知识库 (SFC Compliance)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>My LegalHub - 个人知识库 (v1.4 Dashboard)</title>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- 引入 Marked 用于 Markdown 渲染 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
@@ -17,19 +16,11 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .font-handwriting { font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; }
-        /* Markdown 样式优化 */
-        .prose h1 { font-size: 1.8em; font-weight: 800; margin-bottom: 0.5em; margin-top: 1em; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3em; }
-        .prose h2 { font-size: 1.5em; font-weight: 700; margin-bottom: 0.5em; margin-top: 1.2em; color: #334155; }
-        .prose h3 { font-size: 1.25em; font-weight: 600; margin-bottom: 0.5em; margin-top: 1em; color: #475569; }
-        .prose p { margin-bottom: 1em; line-height: 1.7; color: #374151; }
-        .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
-        .prose ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
-        .prose blockquote { border-left: 4px solid #cbd5e1; padding-left: 1em; font-style: italic; color: #64748b; margin-bottom: 1em; }
-        .prose pre { background: #f1f5f9; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; font-family: monospace; }
-        .prose code { background: #f1f5f9; padding: 0.2em 0.4em; border-radius: 0.25em; font-size: 0.9em; color: #db2777; font-family: monospace; }
-        .prose a { color: #4f46e5; text-decoration: underline; }
-        /* 目录高亮 */
-        .toc-active { color: #4f46e5; font-weight: 600; border-left: 2px solid #4f46e5; padding-left: 8px; margin-left: -10px; }
+        .prose h1 { color: #1e293b; font-weight: 800; border-bottom: 2px solid #e2e8f0; margin-top: 1em; padding-bottom: 0.3em; }
+        .prose h2 { color: #334155; font-weight: 700; border-left: 4px solid #4f46e5; padding-left: 12px; margin-top: 1.5em; }
+        .prose a { color: #4f46e5; text-decoration: none; border-bottom: 1px dashed #4f46e5; }
+        .prose a:hover { border-bottom-style: solid; }
+        .toc-active { color: #4f46e5; font-weight: 600; border-left: 2px solid #4f46e5; padding-left: 8px; margin-left: -10px; background-color: #f5f3ff; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -37,7 +28,7 @@
 
     <script type="text/babel" data-type="module">
         // ==========================================
-        //  Firebase 配置 (已为您保留)
+        //  Firebase 配置
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyCkRDNNdfCDiH5AYBSOnu6U4M3rWnGvW9E",
@@ -48,9 +39,7 @@
             appId: "1:789750197180:web:b316b0265a2cafd1ca19b9",
             measurementId: "G-TRRH7MS9Z8"
         };
-        // ==========================================
 
-        // --- 内置推荐资源列表 (SFC Compliance & Law Firms) ---
         const RECOMMENDED_LINKS = [
             { title: "SFC Codes and Guidelines", url: "https://www.sfc.hk/en/Regulatory-functions/Intermediaries/Licensing/Codes-and-guidelines", source: "SFC官网", tags: "法规 指引" },
             { title: "HKEX Listing Rules (主板上市规则)", url: "https://en-rules.hkex.com.hk/", source: "HKEX", tags: "上市规则 IPO" },
@@ -62,34 +51,12 @@
             { title: "金杜 (KWM) - 香港法律视野", url: "https://www.kwm.com/hk/en/insights.html", source: "金杜", tags: "律所观点" },
             { title: "汉坤 (Han Kun) - 研究文章", url: "https://www.hankunlaw.com/en/portal/publication/index.html", source: "汉坤", tags: "律所观点" },
             { title: "竞天公诚 (Jingtian) - 观点", url: "http://www.jingtian.com/Content/2019/04-23/1517596043.html", source: "竞天公诚", tags: "律所观点" },
-            { title: "中伦 (Zhong Lun) - 研究", url: "https://www.zhonglun.com/research", source: "中伦", tags: "律所观点" },
-            { title: "Mayer Brown - Hong Kong Perspectives", url: "https://www.mayerbrown.com/en/perspectives-events/publications", source: "MayerBrown", tags: "律所观点" },
-            { title: "Clifford Chance - Insights", url: "https://www.cliffordchance.com/insights.html", source: "CliffordChance", tags: "律所观点" },
-            { title: "Kirkland & Ellis - Insights", url: "https://www.kirkland.com/publications", source: "Kirkland", tags: "律所观点" },
-            { title: "Skadden - Insights", url: "https://www.skadden.com/insights", source: "Skadden", tags: "律所观点" }
+            { title: "中伦 (Zhong Lun) - 研究", url: "https://www.zhonglun.com/research", source: "中伦", tags: "律所观点" }
         ];
 
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { 
-            getAuth, 
-            signInWithPopup, 
-            GoogleAuthProvider, 
-            onAuthStateChanged,
-            signOut 
-        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            deleteDoc, 
-            doc, 
-            onSnapshot, 
-            query, 
-            orderBy, 
-            serverTimestamp, 
-            updateDoc,
-            writeBatch
-        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, updateDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         const { useState, useEffect, useMemo, useRef } = React;
 
@@ -98,9 +65,7 @@
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
 
         // --- Icons ---
         const IconBase = ({ children, size = 20, className = "" }) => (
@@ -122,7 +87,8 @@
         const LogOut = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></IconBase>;
         const DownloadCloud = (p) => <IconBase {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><polyline points="12 12 12 21"/><polyline points="8 17 12 21 16 17"/></IconBase>;
         const Globe = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></IconBase>;
-        const List = (p) => <IconBase {...p}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></IconBase>;
+        const LayoutDashboard = (p) => <IconBase {...p}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></IconBase>;
+        const Calendar = (p) => <IconBase {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></IconBase>;
 
         // --- Login Screen ---
         const LoginScreen = () => {
@@ -142,7 +108,6 @@
                         <h1 className="text-2xl font-bold text-slate-900 mb-2">欢迎回来</h1>
                         <p className="text-slate-500 mb-8">请登录以访问您的个人知识库 (云端同步)</p>
                         <button onClick={handleLogin} className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-3 shadow-sm">
-                            <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                             使用 Google 账号登录
                         </button>
                     </div>
@@ -152,11 +117,12 @@
 
         const Sidebar = ({ activeTab, setActiveTab, isMobileMenuOpen, setIsMobileMenuOpen, user }) => {
             const menuItems = [
+                { id: 'dashboard', label: '仪表盘', icon: <LayoutDashboard size={20} /> },
                 { id: 'articles', label: '律所文章库', icon: <LinkIcon size={20} /> },
                 { id: 'official', label: '监管官网', icon: <Globe size={20} /> },
-                { id: 'socials', label: '社媒关注管理', icon: <Smartphone size={20} /> },
+                { id: 'socials', label: '社媒关注', icon: <Smartphone size={20} /> },
                 { id: 'notes', label: '个人随手记', icon: <PenTool size={20} /> },
-                { id: 'system', label: '体系知识整理', icon: <Layers size={20} /> },
+                { id: 'system', label: '体系知识', icon: <Layers size={20} /> },
             ];
             return (
                 <>
@@ -172,15 +138,200 @@
                             </button>
                         ))}
                     </nav>
-                    <div className="p-4 border-t border-slate-800">
+                    <div className="p-4 border-t border-slate-800 bg-slate-800">
+                        <div className="text-xs text-slate-500 mb-2 text-center">v1.4 (Dashboard)</div>
                         <div className="flex items-center gap-3 mb-4 px-2">
                             <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold">{user.email ? user.email[0].toUpperCase() : 'U'}</div>
                             <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{user.displayName || '用户'}</p><p className="text-xs text-slate-500 truncate">{user.email}</p></div>
                         </div>
-                        <button onClick={() => auth.signOut()} className="w-full flex items-center gap-2 px-2 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors text-sm"><LogOut size={16} /> 退出登录</button>
+                        <button onClick={() => auth.signOut()} className="w-full flex items-center gap-2 px-2 py-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors text-sm"><LogOut size={16} /> 退出登录</button>
                     </div>
                 </div>
                 </>
+            );
+        };
+
+        // --- DASHBOARD MODULE (New) ---
+        const DashboardModule = ({ user, setActiveTab }) => {
+            const [stats, setStats] = useState({ notes: 0, articles: 0, socials: 0 });
+            const [recentNotes, setRecentNotes] = useState([]);
+            const [quickNote, setQuickNote] = useState({ content: '', category: '金融法律知识' });
+            const [activityMap, setActivityMap] = useState({});
+
+            const categories = ["金融法律知识", "金融知识", "数据法知识", "其他法律知识", "杂项"];
+
+            useEffect(() => {
+                if (!user || !db) return;
+                // Fetch stats and recent notes
+                const unsubNotes = onSnapshot(query(collection(db, 'users', user.uid, 'notes'), orderBy('createdAt', 'desc')), (snap) => {
+                    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    setStats(prev => ({ ...prev, notes: docs.length }));
+                    setRecentNotes(docs.slice(0, 5)); // Top 5
+                    
+                    // Generate Heatmap Data
+                    const map = {};
+                    docs.forEach(n => {
+                        if (n.createdAt) {
+                            const date = new Date(n.createdAt.seconds * 1000).toDateString();
+                            map[date] = (map[date] || 0) + 1;
+                        }
+                    });
+                    setActivityMap(map);
+                });
+                const unsubArts = onSnapshot(collection(db, 'users', user.uid, 'articles'), snap => setStats(prev => ({ ...prev, articles: snap.size })));
+                const unsubSocials = onSnapshot(collection(db, 'users', user.uid, 'socials'), snap => setStats(prev => ({ ...prev, socials: snap.size })));
+
+                return () => { unsubNotes(); unsubArts(); unsubSocials(); };
+            }, [user]);
+
+            const handleQuickSave = async () => {
+                if (!quickNote.content.trim()) return;
+                try {
+                    await addDoc(collection(db, 'users', user.uid, 'notes'), {
+                        content: quickNote.content,
+                        category: quickNote.category,
+                        createdAt: serverTimestamp()
+                    });
+                    setQuickNote(prev => ({ ...prev, content: '' }));
+                    alert("笔记已保存！");
+                } catch (e) { console.error(e); }
+            };
+
+            // Generate last 90 days for heatmap
+            const heatmapDays = useMemo(() => {
+                const days = [];
+                for (let i = 89; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    days.push(d);
+                }
+                return days;
+            }, []);
+
+            return (
+                <div className="h-full overflow-y-auto p-6 bg-slate-50">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <LayoutDashboard className="text-indigo-600"/> 工作台概览
+                    </h2>
+
+                    {/* 1. Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start">
+                                <div className="p-2 bg-red-50 text-red-500 rounded-lg"><PenTool size={20}/></div>
+                                <span className="text-xs text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-full">累计笔记</span>
+                            </div>
+                            <div>
+                                <span className="text-3xl font-bold text-slate-800">{stats.notes}</span>
+                                <span className="text-sm text-slate-400 ml-2">条</span>
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start">
+                                <div className="p-2 bg-blue-50 text-blue-500 rounded-lg"><LinkIcon size={20}/></div>
+                                <span className="text-xs text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-full">文章收藏</span>
+                            </div>
+                            <div>
+                                <span className="text-3xl font-bold text-slate-800">{stats.articles}</span>
+                                <span className="text-sm text-slate-400 ml-2">篇</span>
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start">
+                                <div className="p-2 bg-purple-50 text-purple-500 rounded-lg"><Smartphone size={20}/></div>
+                                <span className="text-xs text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-full">社媒关注</span>
+                            </div>
+                            <div>
+                                <span className="text-3xl font-bold text-slate-800">{stats.socials}</span>
+                                <span className="text-sm text-slate-400 ml-2">个</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Heatmap */}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
+                        <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2"><Calendar size={16}/> 过去3个月创作密度</h3>
+                        <div className="flex flex-wrap gap-1">
+                            {heatmapDays.map((day, idx) => {
+                                const count = activityMap[day.toDateString()] || 0;
+                                let colorClass = "bg-slate-100";
+                                if (count > 0) colorClass = "bg-indigo-200";
+                                if (count > 2) colorClass = "bg-indigo-400";
+                                if (count > 5) colorClass = "bg-indigo-600";
+                                return (
+                                    <div key={idx} 
+                                         title={`${day.toLocaleDateString()}: ${count} 条记录`}
+                                         className={`w-3 h-3 rounded-sm ${colorClass} hover:ring-1 ring-indigo-300 transition-all`}
+                                    ></div>
+                                );
+                            })}
+                        </div>
+                        <div className="flex justify-end items-center gap-2 mt-2 text-xs text-slate-400">
+                            <span>Less</span>
+                            <div className="w-3 h-3 bg-slate-100 rounded-sm"></div>
+                            <div className="w-3 h-3 bg-indigo-200 rounded-sm"></div>
+                            <div className="w-3 h-3 bg-indigo-400 rounded-sm"></div>
+                            <div className="w-3 h-3 bg-indigo-600 rounded-sm"></div>
+                            <span>More</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* 3. Quick Input */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full">
+                                <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-red-500"></div> 记录此刻想法
+                                </h3>
+                                <div className="space-y-3">
+                                    <select 
+                                        className="w-full p-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        value={quickNote.category}
+                                        onChange={e => setQuickNote({...quickNote, category: e.target.value})}
+                                    >
+                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                    <textarea 
+                                        className="w-full h-32 p-3 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                                        placeholder="写点什么..."
+                                        value={quickNote.content}
+                                        onChange={e => setQuickNote({...quickNote, content: e.target.value})}
+                                    ></textarea>
+                                    <button 
+                                        onClick={handleQuickSave}
+                                        className="w-full py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                                    >
+                                        保存笔记
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 4. Recent Feed */}
+                        <div className="lg:col-span-2">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-sm font-bold text-slate-700">最新动态</h3>
+                                    <button onClick={() => setActiveTab('notes')} className="text-xs text-indigo-500 hover:underline">查看全部</button>
+                                </div>
+                                <div className="space-y-4">
+                                    {recentNotes.length === 0 ? <div className="text-center text-slate-400 py-10 text-sm">暂无动态</div> : 
+                                    recentNotes.map(note => (
+                                        <div key={note.id} className="pb-4 border-b border-slate-50 last:border-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">{note.category || '未分类'}</span>
+                                                <span className="text-xs text-slate-400">
+                                                    {note.createdAt ? new Date(note.createdAt.seconds * 1000).toLocaleDateString() : ''}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-slate-700 line-clamp-2">{note.content}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             );
         };
 
@@ -207,13 +358,9 @@
                 setNewArticle({ title: '', url: '', source: '', tags: '' });
                 setShowModal(false);
             };
-
-            const handleDelete = async (id) => {
-                if (confirm('确定删除？')) await deleteDoc(doc(db, 'users', user.uid, 'articles', id));
-            };
-
+            const handleDelete = async (id) => { if (confirm('确定删除？')) await deleteDoc(doc(db, 'users', user.uid, 'articles', id)); };
             const handleImportRecommended = async () => {
-                if (!confirm(`确定要导入 ${RECOMMENDED_LINKS.length} 条SFC及律所推荐资源吗？`)) return;
+                if (!confirm(`确定要导入 ${RECOMMENDED_LINKS.length} 条推荐资源吗？`)) return;
                 setImporting(true);
                 try {
                     const batch = writeBatch(db);
@@ -223,145 +370,62 @@
                     });
                     await batch.commit();
                     alert("导入成功！");
-                } catch (e) {
-                    console.error(e);
-                    alert("导入失败，请重试");
-                }
+                } catch (e) { console.error(e); alert("导入失败"); }
                 setImporting(false);
             };
 
-            const filtered = articles.filter(item => 
-                (item.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
-                (item.tags || '').toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            const filtered = articles.filter(item => (item.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (item.tags || '').toLowerCase().includes(searchTerm.toLowerCase()));
 
             return (
                 <div className="h-full flex flex-col p-6 overflow-hidden">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <div><h2 className="text-2xl font-bold text-slate-800">律所文章库</h2><p className="text-slate-500 text-sm">SFC Compliance & Insights</p></div>
                         <div className="flex gap-2">
-                            <button onClick={handleImportRecommended} disabled={importing} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm text-sm">
-                                <DownloadCloud size={16} /> {importing ? '导入中...' : '一键导入推荐'}
-                            </button>
-                            <button onClick={() => setShowModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm text-sm">
-                                <Plus size={16} /> 新增文章
-                            </button>
+                            <button onClick={handleImportRecommended} disabled={importing} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm text-sm"><DownloadCloud size={16} /> {importing ? '导入中...' : '一键导入'}</button>
+                            <button onClick={() => setShowModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm text-sm"><Plus size={16} /> 新增文章</button>
                         </div>
                     </div>
-                    <div className="mb-6 relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
-                        <input type="text" placeholder="搜索标题或标签 (如: IPO, 金杜)..." className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    </div>
+                    <div className="mb-6 relative"><Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} /><input type="text" placeholder="搜索..." className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /></div>
                     <div className="flex-1 overflow-y-auto pr-2 space-y-3">
-                        {filtered.length === 0 ? <div className="text-center py-20 text-slate-400">暂无数据，请点击右上角导入推荐资源</div> : filtered.map(article => (
+                        {filtered.length === 0 ? <div className="text-center py-20 text-slate-400">暂无数据</div> : filtered.map(article => (
                             <div key={article.id} className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-md transition-shadow flex justify-between items-start group">
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className={`text-xs px-2 py-0.5 rounded font-medium ${article.source?.includes('SFC') ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{article.source || '未分类'}</span>
-                                        <a href={article.url} target="_blank" className="font-semibold text-slate-800 hover:text-indigo-600 truncate flex items-center gap-1">{article.title} <ExternalLink size={14} className="opacity-50" /></a>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                        {article.tags.split(' ').map((t,i) => t && <span key={i} className="text-xs text-indigo-500 bg-indigo-50 px-2 py-1 rounded">#{t}</span>)}
-                                    </div>
+                                    <div className="flex items-center gap-2 mb-1"><span className={`text-xs px-2 py-0.5 rounded font-medium ${article.source?.includes('SFC') ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{article.source || '未分类'}</span><a href={article.url} target="_blank" className="font-semibold text-slate-800 hover:text-indigo-600 truncate flex items-center gap-1">{article.title} <ExternalLink size={14} className="opacity-50" /></a></div>
+                                    <div className="flex flex-wrap gap-2 mt-2">{article.tags.split(' ').map((t,i) => t && <span key={i} className="text-xs text-indigo-500 bg-indigo-50 px-2 py-1 rounded">#{t}</span>)}</div>
                                 </div>
                                 <button onClick={() => handleDelete(article.id)} className="text-slate-300 hover:text-red-500 p-2 opacity-0 group-hover:opacity-100"><Trash2 size={16} /></button>
                             </div>
                         ))}
                     </div>
-                    {showModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
-                                <h3 className="text-xl font-bold mb-4">添加文章</h3>
-                                <form onSubmit={handleAdd} className="space-y-4">
-                                    <input required className="w-full p-2 border rounded" placeholder="标题" value={newArticle.title} onChange={e => setNewArticle({...newArticle, title: e.target.value})} />
-                                    <input required type="url" className="w-full p-2 border rounded" placeholder="URL" value={newArticle.url} onChange={e => setNewArticle({...newArticle, url: e.target.value})} />
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <input className="w-full p-2 border rounded" placeholder="来源" value={newArticle.source} onChange={e => setNewArticle({...newArticle, source: e.target.value})} />
-                                        <input className="w-full p-2 border rounded" placeholder="标签 (空格分隔)" value={newArticle.tags} onChange={e => setNewArticle({...newArticle, tags: e.target.value})} />
-                                    </div>
-                                    <div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded">取消</button><button type="submit" className="flex-1 py-2 bg-indigo-600 text-white rounded">保存</button></div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
+                    {showModal && <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6"><h3 className="text-xl font-bold mb-4">添加文章</h3><form onSubmit={handleAdd} className="space-y-4"><input required className="w-full p-2 border rounded" placeholder="标题" value={newArticle.title} onChange={e => setNewArticle({...newArticle, title: e.target.value})} /><input required type="url" className="w-full p-2 border rounded" placeholder="URL" value={newArticle.url} onChange={e => setNewArticle({...newArticle, url: e.target.value})} /><div className="grid grid-cols-2 gap-4"><input className="w-full p-2 border rounded" placeholder="来源" value={newArticle.source} onChange={e => setNewArticle({...newArticle, source: e.target.value})} /><input className="w-full p-2 border rounded" placeholder="标签" value={newArticle.tags} onChange={e => setNewArticle({...newArticle, tags: e.target.value})} /></div><div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded">取消</button><button type="submit" className="flex-1 py-2 bg-indigo-600 text-white rounded">保存</button></div></form></div></div>}
                 </div>
             );
         };
         
-        // --- Official Links Module (New) ---
         const OfficialModule = ({ user }) => {
             const [links, setLinks] = useState([]);
             const [showModal, setShowModal] = useState(false);
             const [newLink, setNewLink] = useState({ title: '', url: '', source: 'SFC', tags: '' });
             const [searchTerm, setSearchTerm] = useState('');
-
             useEffect(() => {
                 if (!user || !db) return;
                 const q = query(collection(db, 'users', user.uid, 'official_links'), orderBy('createdAt', 'desc'));
-                const unsubscribe = onSnapshot(q, (snapshot) => {
-                    setLinks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                });
+                const unsubscribe = onSnapshot(q, (snapshot) => { setLinks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); });
                 return () => unsubscribe();
             }, [user]);
-
-            const handleAdd = async (e) => {
-                e.preventDefault();
-                if (!newLink.title || !newLink.url) return;
-                await addDoc(collection(db, 'users', user.uid, 'official_links'), { ...newLink, createdAt: serverTimestamp() });
-                setNewLink({ title: '', url: '', source: 'SFC', tags: '' });
-                setShowModal(false);
-            };
-
+            const handleAdd = async (e) => { e.preventDefault(); if (!newLink.title || !newLink.url) return; await addDoc(collection(db, 'users', user.uid, 'official_links'), { ...newLink, createdAt: serverTimestamp() }); setNewLink({ title: '', url: '', source: 'SFC', tags: '' }); setShowModal(false); };
             const handleDelete = async (id) => { if (confirm('确定删除？')) await deleteDoc(doc(db, 'users', user.uid, 'official_links', id)); };
-
-            const filtered = links.filter(item => 
-                (item.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
-                (item.tags || '').toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
+            const filtered = links.filter(item => (item.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (item.tags || '').toLowerCase().includes(searchTerm.toLowerCase()));
             return (
                 <div className="h-full flex flex-col p-6 overflow-hidden">
-                    <div className="flex justify-between items-center mb-6">
-                        <div><h2 className="text-2xl font-bold text-slate-800">监管官网</h2><p className="text-slate-500 text-sm">Official Regulatory Websites</p></div>
-                        <button onClick={() => setShowModal(true)} className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm"><Plus size={18} /> 新增网站</button>
-                    </div>
-                    <div className="mb-6 relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
-                        <input type="text" placeholder="搜索官网..." className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    </div>
+                    <div className="flex justify-between items-center mb-6"><div><h2 className="text-2xl font-bold text-slate-800">监管官网</h2><p className="text-slate-500 text-sm">Official Regulatory Websites</p></div><button onClick={() => setShowModal(true)} className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm"><Plus size={18} /> 新增网站</button></div>
+                    <div className="mb-6 relative"><Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} /><input type="text" placeholder="搜索官网..." className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /></div>
                     <div className="flex-1 overflow-y-auto pr-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filtered.length === 0 ? <div className="text-center py-20 text-slate-400 col-span-full">暂无数据，请添加</div> : filtered.map(link => (
-                            <div key={link.id} className="bg-white p-4 rounded-xl border border-slate-200 hover:shadow-lg transition-all flex flex-col justify-between group h-32 relative">
-                                <button onClick={() => handleDelete(link.id)} className="absolute top-2 right-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={14} /></button>
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="p-1.5 bg-sky-50 rounded text-sky-600"><Globe size={16}/></div>
-                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">{link.source}</span>
-                                    </div>
-                                    <h3 className="font-bold text-slate-800 line-clamp-2">{link.title}</h3>
-                                </div>
-                                <a href={link.url} target="_blank" className="text-xs text-sky-600 font-medium hover:underline flex items-center gap-1 mt-2">
-                                    访问网站 <ExternalLink size={10} />
-                                </a>
-                            </div>
+                        {filtered.length === 0 ? <div className="text-center py-20 text-slate-400 col-span-full">暂无数据</div> : filtered.map(link => (
+                            <div key={link.id} className="bg-white p-4 rounded-xl border border-slate-200 hover:shadow-lg transition-all flex flex-col justify-between group h-32 relative"><button onClick={() => handleDelete(link.id)} className="absolute top-2 right-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={14} /></button><div><div className="flex items-center gap-2 mb-2"><div className="p-1.5 bg-sky-50 rounded text-sky-600"><Globe size={16}/></div><span className="text-xs font-bold text-slate-500 uppercase tracking-wide">{link.source}</span></div><h3 className="font-bold text-slate-800 line-clamp-2">{link.title}</h3></div><a href={link.url} target="_blank" className="text-xs text-sky-600 font-medium hover:underline flex items-center gap-1 mt-2">访问网站 <ExternalLink size={10} /></a></div>
                         ))}
                     </div>
-                    {showModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
-                                <h3 className="text-xl font-bold mb-4">添加官网</h3>
-                                <form onSubmit={handleAdd} className="space-y-4">
-                                    <input required className="w-full p-2 border rounded" placeholder="网站名称" value={newLink.title} onChange={e => setNewLink({...newLink, title: e.target.value})} />
-                                    <input required type="url" className="w-full p-2 border rounded" placeholder="网址 URL" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} />
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <input className="w-full p-2 border rounded" placeholder="机构 (SFC/HKEX)" value={newLink.source} onChange={e => setNewLink({...newLink, source: e.target.value})} />
-                                        <input className="w-full p-2 border rounded" placeholder="标签" value={newLink.tags} onChange={e => setNewLink({...newLink, tags: e.target.value})} />
-                                    </div>
-                                    <div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded">取消</button><button type="submit" className="flex-1 py-2 bg-sky-600 text-white rounded">保存</button></div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
+                    {showModal && <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6"><h3 className="text-xl font-bold mb-4">添加官网</h3><form onSubmit={handleAdd} className="space-y-4"><input required className="w-full p-2 border rounded" placeholder="网站名称" value={newLink.title} onChange={e => setNewLink({...newLink, title: e.target.value})} /><input required type="url" className="w-full p-2 border rounded" placeholder="网址 URL" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} /><div className="grid grid-cols-2 gap-4"><input className="w-full p-2 border rounded" placeholder="机构" value={newLink.source} onChange={e => setNewLink({...newLink, source: e.target.value})} /><input className="w-full p-2 border rounded" placeholder="标签" value={newLink.tags} onChange={e => setNewLink({...newLink, tags: e.target.value})} /></div><div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded">取消</button><button type="submit" className="flex-1 py-2 bg-sky-600 text-white rounded">保存</button></div></form></div></div>}
                 </div>
             );
         };
@@ -371,71 +435,18 @@
             const [showModal, setShowModal] = useState(false);
             const [newItem, setNewItem] = useState({ name: '', url: '', category: '刑法合规', platform: 'XHS' });
             const [activeCategory, setActiveCategory] = useState('全部');
-
             useEffect(() => {
                 if (!user || !db) return;
                 const q = query(collection(db, 'users', user.uid, 'socials'), orderBy('createdAt', 'desc'));
-                const unsubscribe = onSnapshot(q, (snapshot) => {
-                    setSocials(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                });
+                const unsubscribe = onSnapshot(q, (snapshot) => { setSocials(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); });
                 return () => unsubscribe();
             }, [user]);
-
-            const handleAdd = async (e) => {
-                e.preventDefault();
-                // 数据完整性检查
-                if (!newItem.name || !newItem.url) { alert("请填写名称和链接"); return; }
-                
-                await addDoc(collection(db, 'users', user.uid, 'socials'), { ...newItem, createdAt: serverTimestamp() });
-                
-                // 1. 自动切换到“全部”，防止新增项在当前分类下不可见
-                setActiveCategory('全部');
-                // 2. 重置表单，防止下次打开有残留数据
-                setNewItem({ name: '', url: '', category: '刑法合规', platform: 'XHS' });
-                setShowModal(false);
-            };
+            const handleAdd = async (e) => { e.preventDefault(); if (!newItem.name || !newItem.url) { alert("请填写完整"); return; } await addDoc(collection(db, 'users', user.uid, 'socials'), { ...newItem, createdAt: serverTimestamp() }); setActiveCategory('全部'); setNewItem({ name: '', url: '', category: '刑法合规', platform: 'XHS' }); setShowModal(false); };
             const handleDelete = async (id) => { if (confirm('删除？')) await deleteDoc(doc(db, 'users', user.uid, 'socials', id)); };
-
             const categories = ['全部', ...new Set(socials.map(i => i.category))];
             const filtered = activeCategory === '全部' ? socials : socials.filter(i => i.category === activeCategory);
-
             return (
-                <div className="h-full flex flex-col p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-slate-800">社媒关注管理</h2>
-                        <button onClick={() => setShowModal(true)} className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm"><Plus size={18} /> 添加博主</button>
-                    </div>
-                    <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                        {categories.map(cat => (
-                            <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeCategory === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}`}>{cat}</button>
-                        ))}
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2">
-                        {filtered.map(item => (
-                            <div key={item.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative group">
-                                <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={14} /></button>
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${item.platform === 'XHS' ? 'bg-red-500' : 'bg-green-600'}`}>{item.platform === 'XHS' ? '书' : '微'}</div>
-                                    <div className="flex-1 overflow-hidden"><h3 className="font-bold text-slate-800 truncate">{item.name}</h3><span className="text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{item.category}</span></div>
-                                </div>
-                                <a href={item.url} target="_blank" className="block w-full text-center py-2 rounded-lg bg-slate-50 text-indigo-600 font-medium text-sm hover:bg-indigo-50">访问主页</a>
-                            </div>
-                        ))}
-                    </div>
-                    {showModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
-                                <h3 className="text-xl font-bold mb-4">添加关注</h3>
-                                <form onSubmit={handleAdd} className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4"><select className="w-full p-2 border rounded" value={newItem.platform} onChange={e => setNewItem({...newItem, platform: e.target.value})}><option value="XHS">小红书</option><option value="WX">公众号</option></select><input className="w-full p-2 border rounded" placeholder="分类" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} /></div>
-                                    <input required className="w-full p-2 border rounded" placeholder="名称" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
-                                    <input required type="url" className="w-full p-2 border rounded" placeholder="URL" value={newItem.url} onChange={e => setNewItem({...newItem, url: e.target.value})} />
-                                    <div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded">取消</button><button type="submit" className="flex-1 py-2 bg-pink-500 text-white rounded">添加</button></div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <div className="h-full flex flex-col p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-2xl font-bold text-slate-800">社媒关注管理</h2><button onClick={() => setShowModal(true)} className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm"><Plus size={18} /> 添加博主</button></div><div className="flex gap-2 mb-6 overflow-x-auto pb-2">{categories.map(cat => (<button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeCategory === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}`}>{cat}</button>))}</div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2">{filtered.map(item => (<div key={item.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative group"><button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={14} /></button><div className="flex items-center gap-3 mb-3"><div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${item.platform === 'XHS' ? 'bg-red-500' : 'bg-green-600'}`}>{item.platform === 'XHS' ? '书' : '微'}</div><div className="flex-1 overflow-hidden"><h3 className="font-bold text-slate-800 truncate">{item.name}</h3><span className="text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{item.category}</span></div></div><a href={item.url} target="_blank" className="block w-full text-center py-2 rounded-lg bg-slate-50 text-indigo-600 font-medium text-sm hover:bg-indigo-50">访问主页</a></div>))}</div>{showModal && <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6"><h3 className="text-xl font-bold mb-4">添加关注</h3><form onSubmit={handleAdd} className="space-y-4"><div className="grid grid-cols-2 gap-4"><select className="w-full p-2 border rounded" value={newItem.platform} onChange={e => setNewItem({...newItem, platform: e.target.value})}><option value="XHS">小红书</option><option value="WX">公众号</option></select><input className="w-full p-2 border rounded" placeholder="分类" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} /></div><input required className="w-full p-2 border rounded" placeholder="名称" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} /><input required type="url" className="w-full p-2 border rounded" placeholder="URL" value={newItem.url} onChange={e => setNewItem({...newItem, url: e.target.value})} /><div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded">取消</button><button type="submit" className="flex-1 py-2 bg-pink-500 text-white rounded">添加</button></div></form></div></div>}</div>
             );
         };
 
@@ -448,24 +459,10 @@
                 const unsubscribe = onSnapshot(q, (snapshot) => { setNotes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); });
                 return () => unsubscribe();
             }, [user]);
-            const handleAdd = async () => { if (!content.trim()) return; await addDoc(collection(db, 'users', user.uid, 'notes'), { content, createdAt: serverTimestamp() }); setContent(''); };
+            const handleAdd = async () => { if (!content.trim()) return; await addDoc(collection(db, 'users', user.uid, 'notes'), { content, category: '随手记', createdAt: serverTimestamp() }); setContent(''); };
             const handleDelete = async (id) => { if (confirm('删除？')) await deleteDoc(doc(db, 'users', user.uid, 'notes', id)); };
             return (
-                <div className="h-full flex flex-col p-6">
-                    <h2 className="text-2xl font-bold text-slate-800 mb-6">个人随手记</h2>
-                    <div className="mb-6 relative">
-                        <textarea className="w-full p-4 border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none h-32" placeholder="写下你的想法..." value={content} onChange={e => setContent(e.target.value)}></textarea>
-                        <button onClick={handleAdd} className="absolute bottom-4 right-4 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-medium px-4 py-1.5 rounded-lg">记下来</button>
-                    </div>
-                    <div className="flex-1 overflow-y-auto pr-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max">
-                        {notes.map(note => (
-                            <div key={note.id} className="bg-yellow-50 border border-yellow-100 p-4 rounded-xl shadow-sm relative group">
-                                <button onClick={() => handleDelete(note.id)} className="absolute top-2 right-2 text-yellow-700/30 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={14} /></button>
-                                <p className="text-slate-700 whitespace-pre-wrap text-sm leading-relaxed font-handwriting">{note.content}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <div className="h-full flex flex-col p-6"><h2 className="text-2xl font-bold text-slate-800 mb-6">个人随手记</h2><div className="mb-6 relative"><textarea className="w-full p-4 border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none h-32" placeholder="写下你的想法..." value={content} onChange={e => setContent(e.target.value)}></textarea><button onClick={handleAdd} className="absolute bottom-4 right-4 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-medium px-4 py-1.5 rounded-lg">记下来</button></div><div className="flex-1 overflow-y-auto pr-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max">{notes.map(note => (<div key={note.id} className="bg-yellow-50 border border-yellow-100 p-4 rounded-xl shadow-sm relative group"><button onClick={() => handleDelete(note.id)} className="absolute top-2 right-2 text-yellow-700/30 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={14} /></button><span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded mb-2 inline-block">{note.category || '随手记'}</span><p className="text-slate-700 whitespace-pre-wrap text-sm leading-relaxed font-handwriting">{note.content}</p></div>))}</div></div>
             );
         };
 
@@ -486,13 +483,13 @@
 
             const currentTopicData = useMemo(() => topics.find(t => t.id === activeTopic), [topics, activeTopic]);
 
-            // 解析 Markdown 生成目录
             useEffect(() => {
                 if (currentTopicData && !isEditing) {
                     const headings = [];
-                    const lines = currentTopicData.content.split('\n');
+                    const safeContent = typeof currentTopicData.content === 'string' ? currentTopicData.content : '';
+                    const lines = safeContent.split('\n');
                     lines.forEach((line) => {
-                        const match = line.match(/^(#{1,3})\s+(.+)$/);
+                        const match = line.match(/^(#{1,3})\s*(.+)$/); 
                         if (match) {
                             const level = match[1].length;
                             const text = match[2];
@@ -504,8 +501,12 @@
                 }
             }, [currentTopicData, isEditing]);
 
-            // 配置 Marked 渲染器，添加 ID 以支持跳转
             const getMarkdownHtml = (content) => {
+                if (!content) return '';
+                if (typeof content !== 'string') return 'Error: Content is not text.';
+                if (content.includes('[object Object]')) {
+                    return '<div class="p-4 bg-red-50 text-red-600 rounded">检测到数据异常 (包含 [object Object])。请点击右上角“编辑”，手动删除该行文字。</div>' + marked.parse(content.replace(/\[object Object\]/g, ''));
+                }
                 let headingIndex = 0;
                 const renderer = new marked.Renderer();
                 renderer.heading = (text, level) => {
@@ -516,75 +517,40 @@
                 return marked.parse(content, { renderer });
             };
 
-            const scrollToHeading = (id) => {
-                const el = document.getElementById(id);
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-            };
-
-            const handleAddTopic = async () => {
-                if (!newTopicName.trim()) return;
-                const res = await addDoc(collection(db, 'users', user.uid, 'knowledge'), { title: newTopicName, content: '# ' + newTopicName + '\n\n开始撰写您的知识...', createdAt: serverTimestamp() });
-                setNewTopicName('');
-                setActiveTopic(res.id);
-            };
+            const scrollToHeading = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); };
+            const handleAddTopic = async () => { if (!newTopicName.trim()) return; const res = await addDoc(collection(db, 'users', user.uid, 'knowledge'), { title: newTopicName, content: '# ' + newTopicName + '\n\n开始撰写...', createdAt: serverTimestamp() }); setNewTopicName(''); setActiveTopic(res.id); };
             const handleSaveContent = async () => { if (!activeTopic) return; await updateDoc(doc(db, 'users', user.uid, 'knowledge', activeTopic), { content: editContent, updatedAt: serverTimestamp() }); setIsEditing(false); };
             const handleDeleteTopic = async (e, id) => { e.stopPropagation(); if(confirm('删除？')) { if (activeTopic === id) setActiveTopic(null); await deleteDoc(doc(db, 'users', user.uid, 'knowledge', id)); } };
 
             return (
                 <div className="h-full flex flex-col md:flex-row bg-white">
-                    {/* 左侧：主题列表 */}
                     <div className="w-full md:w-64 border-r border-slate-200 flex flex-col bg-slate-50">
                         <div className="p-4 border-b border-slate-200"><h2 className="font-bold text-slate-700 flex items-center gap-2"><FolderOpen size={18} /> 知识体系</h2></div>
                         <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                            {topics.map(topic => (
-                                <div key={topic.id} onClick={() => { setActiveTopic(topic.id); setIsEditing(false); }} className={`group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer text-sm ${activeTopic === topic.id ? 'bg-white shadow-sm text-indigo-600 border border-slate-200' : 'text-slate-600 hover:bg-slate-100'}`}>
-                                    <span className="truncate flex-1">{topic.title}</span>
-                                    <button onClick={(e) => handleDeleteTopic(e, topic.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500"><Trash2 size={14} /></button>
-                                </div>
-                            ))}
+                            {topics.map(topic => (<div key={topic.id} onClick={() => { setActiveTopic(topic.id); setIsEditing(false); }} className={`group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer text-sm ${activeTopic === topic.id ? 'bg-white shadow-sm text-indigo-600 border border-slate-200' : 'text-slate-600 hover:bg-slate-100'}`}><span className="truncate flex-1">{topic.title}</span><button onClick={(e) => handleDeleteTopic(e, topic.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500"><Trash2 size={14} /></button></div>))}
                         </div>
                         <div className="p-3 border-t border-slate-200 flex gap-2"><input className="flex-1 px-2 py-1 text-sm border rounded" placeholder="新主题..." value={newTopicName} onChange={e => setNewTopicName(e.target.value)} /><button onClick={handleAddTopic} className="bg-indigo-600 text-white p-1.5 rounded"><Plus size={16} /></button></div>
                     </div>
-
-                    {/* 中间：内容区域 */}
                     <div className="flex-1 flex flex-col h-full overflow-hidden relative">
                         {activeTopic && currentTopicData ? (
                             <>
                                 <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-white">
                                     <span className="text-slate-500 text-xs">上次更新: {new Date().toLocaleDateString()}</span>
-                                    {isEditing ? (
-                                        <div className="flex gap-2"><button onClick={() => setIsEditing(false)} className="px-3 py-1.5 text-sm rounded hover:bg-slate-100">取消</button><button onClick={handleSaveContent} className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded">保存</button></div>
-                                    ) : (
-                                        <button onClick={() => { setEditContent(currentTopicData.content); setIsEditing(true); }} className="px-3 py-1.5 text-sm border rounded hover:bg-slate-50 flex items-center gap-1"><PenTool size={14} /> 编辑</button>
-                                    )}
+                                    {isEditing ? (<div className="flex gap-2"><button onClick={() => setIsEditing(false)} className="px-3 py-1.5 text-sm rounded hover:bg-slate-100">取消</button><button onClick={handleSaveContent} className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded">保存</button></div>) : (<button onClick={() => { setEditContent(currentTopicData.content); setIsEditing(true); }} className="px-3 py-1.5 text-sm border rounded hover:bg-slate-50 flex items-center gap-1"><PenTool size={14} /> 编辑</button>)}
                                 </div>
                                 <div className="flex-1 overflow-y-auto p-8 bg-white flex flex-row">
-                                    <div className="flex-1 pr-4">
-                                        {isEditing ? 
-                                            <textarea className="w-full h-full resize-none outline-none font-mono text-sm leading-relaxed p-4 bg-slate-50 rounded" value={editContent} onChange={e => setEditContent(e.target.value)} /> 
-                                            : 
-                                            <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: getMarkdownHtml(currentTopicData.content) }}></div>
-                                        }
+                                    <div className="flex-1 pr-4 max-w-4xl">
+                                        {isEditing ? <textarea className="w-full h-full resize-none outline-none font-mono text-sm leading-relaxed p-4 bg-slate-50 rounded" value={editContent} onChange={e => setEditContent(e.target.value)} /> : <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: getMarkdownHtml(currentTopicData.content) }}></div>}
                                     </div>
-                                    
-                                    {/* 右侧：Markdown 目录 (仅在浏览模式显示) */}
                                     {!isEditing && toc.length > 0 && (
                                         <div className="w-48 pl-4 border-l border-slate-100 hidden lg:block overflow-y-auto max-h-screen sticky top-0">
                                             <div className="text-xs font-bold text-slate-400 mb-2 uppercase">目录 (TOC)</div>
-                                            <ul className="space-y-2">
-                                                {toc.map((h, i) => (
-                                                    <li key={i} className={`text-xs cursor-pointer hover:text-indigo-600 transition-colors ${h.level === 1 ? 'font-bold' : 'pl-2 text-slate-500'}`} onClick={() => scrollToHeading(h.id)}>
-                                                        {h.text}
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                            <ul className="space-y-2">{toc.map((h, i) => (<li key={i} className={`text-xs cursor-pointer hover:text-indigo-600 transition-colors ${h.level === 1 ? 'font-bold' : 'pl-2 text-slate-500'}`} onClick={() => scrollToHeading(h.id)}>{h.text}</li>))}</ul>
                                         </div>
                                     )}
                                 </div>
                             </>
-                        ) : (
-                            <div className="flex-1 flex items-center justify-center text-slate-400 flex-col gap-4"><Layers size={48} className="opacity-20" /><p>请选择或创建一个知识主题</p></div>
-                        )}
+                        ) : (<div className="flex-1 flex items-center justify-center text-slate-400 flex-col gap-4"><Layers size={48} className="opacity-20" /><p>请选择或创建一个知识主题</p></div>)}
                     </div>
                 </div>
             );
@@ -593,24 +559,18 @@
         const App = () => {
             const [user, setUser] = useState(null);
             const [loading, setLoading] = useState(true);
-            const [activeTab, setActiveTab] = useState('articles');
+            const [activeTab, setActiveTab] = useState('dashboard');
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-            useEffect(() => {
-                if (!auth) { setLoading(false); return; }
-                const unsubscribe = onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); });
-                return () => unsubscribe();
-            }, []);
-
+            useEffect(() => { if (!auth) { setLoading(false); return; } const unsubscribe = onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); }); return () => unsubscribe(); }, []);
             if (loading) return <div className="flex h-screen items-center justify-center">加载中...</div>;
             if (!user) return <LoginScreen />;
-
             return (
                 <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
                     <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} user={user} />
                     <div className="flex-1 flex flex-col w-full h-full">
                         <div className="md:hidden p-4 bg-white border-b border-slate-200 flex justify-between items-center shadow-sm z-10"><span className="font-bold text-slate-700">My LegalHub</span><button onClick={() => setIsMobileMenuOpen(true)}><Menu className="text-slate-600" /></button></div>
                         <main className="flex-1 overflow-hidden relative">
+                            {activeTab === 'dashboard' && <DashboardModule user={user} setActiveTab={setActiveTab} />}
                             {activeTab === 'articles' && <ArticlesModule user={user} />}
                             {activeTab === 'official' && <OfficialModule user={user} />}
                             {activeTab === 'socials' && <SocialsModule user={user} />}
