@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My LegalHub - 个人知识库 (v2.3 Final)</title>
+    <title>My LegalHub - 个人知识库 (v2.4 Final)</title>
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -30,20 +30,19 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        // ==========================================
-        //  Firebase 配置 (已恢复到 Turn 7 的版本)
-        //  如果您更换了项目，请直接在这里替换整段代码
-        // ==========================================
+        // ==================================================================================
+        //  配置区域：请将 Firebase 控制台 -> 项目设置 -> General -> Your apps 中的配置完整粘贴到这里
+        //  注意：API Key 必须与 Project ID 匹配，否则会报错 "identity-toolkit-api..."
+        // ==================================================================================
         const firebaseConfig = {
-            apiKey: "AIzaSyCkRDNNdfCDiH5AYBSOnu6U4M3rWnGvW9E",
-            authDomain: "my-legal-hub.firebaseapp.com",
-            projectId: "my-legal-hub",
-            storageBucket: "my-legal-hub.firebasestorage.app",
-            messagingSenderId: "789750197180",
-            appId: "1:789750197180:web:b316b0265a2cafd1ca19b9",
-            measurementId: "G-TRRH7MS9Z8"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-        // ==========================================
+        // ==================================================================================
 
         const RECOMMENDED_LINKS = [
             { title: "SFC Codes and Guidelines", url: "https://www.sfc.hk/en/Regulatory-functions/Intermediaries/Licensing/Codes-and-guidelines", source: "SFC官网", tags: "法规 指引" },
@@ -109,11 +108,11 @@
         const Calendar = (p) => <IconBase {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></IconBase>;
         const BarChart = (p) => <IconBase {...p}><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></IconBase>;
         const Zap = (p) => <IconBase {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>;
-        const Settings = (p) => <IconBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></IconBase>;
+        const Settings = (p) => <IconBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></IconBase>;
         const Edit2 = (p) => <IconBase {...p}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></IconBase>;
         const Sparkles = (p) => <IconBase {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></IconBase>;
         
-        // --- AI Helper (Dynamic Key) ---
+        // --- AI Helper (Late Binding - Only asks for key when used) ---
         const generateAIContent = async (prompt, text) => {
             let apiKey = localStorage.getItem('gemini_key');
             if (!apiKey) {
@@ -147,7 +146,7 @@
         // --- Login Screen ---
         const LoginScreen = () => {
             const handleLogin = async () => {
-                if (!auth) { alert("Firebase 初始化失败"); return; }
+                if (!auth) { alert("Firebase 初始化失败，请检查代码中的 firebaseConfig 配置"); return; }
                 try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (error) { console.error(error); alert("登录失败: " + error.message); }
             };
             return (
