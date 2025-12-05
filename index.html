@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My LegalHub - 个人知识库 (v1.8.2 Dynamic)</title>
+    <title>My LegalHub - 个人知识库 (v2.0)</title>
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -30,69 +30,38 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        // 默认配置 (作为兜底，但优先使用 LocalStorage 中的配置)
-        const DEFAULT_CONFIG = {
-            apiKey: "AIzaSyD97uLp5vF7-8hlWocFX1rVxxqemOR4Pvc", // 用户提供的新 Key
-            authDomain: "my-legal-hub.firebaseapp.com",
-            projectId: "my-legal-hub",
-            storageBucket: "my-legal-hub.firebasestorage.app",
-            messagingSenderId: "789750197180", // 注意：这可能与新 Key 不匹配
-            appId: "1:789750197180:web:b316b0265a2cafd1ca19b9",
-            measurementId: "G-TRRH7MS9Z8"
-        };
-
-        // 尝试从本地存储加载配置，否则使用默认
-        const getStoredConfig = () => {
-            const stored = localStorage.getItem('firebase_config_override');
-            if (stored) {
-                try { return JSON.parse(stored); } catch (e) { console.error("Config parse error", e); return DEFAULT_CONFIG; }
-            }
-            return DEFAULT_CONFIG;
-        };
-
-        const firebaseConfig = getStoredConfig();
-
-        // --- 推荐资源库 ---
-        const RECOMMENDED_LINKS = [
-            { title: "SFC Codes and Guidelines", url: "https://www.sfc.hk/en/Regulatory-functions/Intermediaries/Licensing/Codes-and-guidelines", source: "SFC官网", tags: "法规 指引" },
-            { title: "HKEX Listing Rules (主板上市规则)", url: "https://en-rules.hkex.com.hk/", source: "HKEX", tags: "上市规则 IPO" },
-            { title: "SFC Newsletters (合规通讯)", url: "https://www.sfc.hk/en/Published-resources/Newsletters", source: "SFC官网", tags: "监管动态" },
-            { title: "HKEX Guidance Letters (指引信)", url: "https://www.hkex.com.hk/Listing/Rules-and-Guidance/Guide-to-Listing/Guidance-Letters?sc_lang=en", source: "HKEX", tags: "指引信 IPO" },
-            { title: "Takeovers Panel Decisions (收购委员会裁决)", url: "https://www.sfc.hk/en/Regulatory-functions/Listings-and-takeovers/Takeovers-and-Mergers/Decisions-and-statements", source: "SFC官网", tags: "并购 案例" },
-            { title: "Webb-site (David Webb)", url: "https://webb-site.com/", source: "工具", tags: "尽调 数据库" },
-            { title: "HKLII (香港法律资讯中心)", url: "https://www.hklii.org/en/", source: "工具", tags: "判例 法例" },
-            { title: "金杜 (KWM) - 香港法律视野", url: "https://www.kwm.com/hk/en/insights.html", source: "金杜", tags: "律所观点" },
-            { title: "汉坤 (Han Kun) - 研究文章", url: "https://www.hankunlaw.com/en/portal/publication/index.html", source: "汉坤", tags: "律所观点" },
-            { title: "竞天公诚 (Jingtian) - 观点", url: "http://www.jingtian.com/Content/2019/04-23/1517596043.html", source: "竞天公诚", tags: "律所观点" },
-            { title: "中伦 (Zhong Lun) - 研究", url: "https://www.zhonglun.com/research", source: "中伦", tags: "律所观点" }
-        ];
-
-        const RECOMMENDED_OFFICIALS = [
-            { title: "SFC 证券及期货事务监察委员会", url: "https://www.sfc.hk/", source: "SFC", tags: "监管" },
-            { title: "HKEX 香港交易所", url: "https://www.hkex.com.hk/", source: "HKEX", tags: "交易所" },
-            { title: "HKMA 香港金融管理局", url: "https://www.hkma.gov.hk/", source: "HKMA", tags: "银行" },
-            { title: "IA 保险业监管局", url: "https://www.ia.org.hk/", source: "IA", tags: "保险" },
-            { title: "MPFA 积金局", url: "https://www.mpfa.org.hk/", source: "MPFA", tags: "退休金" },
-            { title: "FSTB 财经事务及库务局", url: "https://www.fstb.gov.hk/", source: "政府", tags: "政策" },
-            { title: "Companies Registry 公司注册处", url: "https://www.cr.gov.hk/", source: "政府", tags: "查册" },
-            { title: "HK Judiciary 司法机构", url: "https://www.judiciary.hk/", source: "司法", tags: "法院" },
-            { title: "e-Legislation 电子版香港法例", url: "https://www.elegislation.gov.hk/", source: "政府", tags: "法例" },
-            { title: "中国证监会 (CSRC)", url: "http://www.csrc.gov.cn/", source: "CSRC", tags: "内地" },
-            { title: "中国人民银行 (PBOC)", url: "http://www.pbc.gov.cn/", source: "PBOC", tags: "内地" }
-        ];
-
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, updateDoc, writeBatch, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         const { useState, useEffect, useMemo, useRef } = React;
 
+        // --- 全局变量 ---
         let app, auth, db;
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } catch (e) { console.error("Init Error", e); }
+        let isFirebaseInitialized = false;
+
+        // --- 尝试初始化 Firebase ---
+        const initFirebase = () => {
+            const stored = localStorage.getItem('firebase_config_override');
+            if (stored) {
+                try {
+                    const config = JSON.parse(stored);
+                    app = initializeApp(config);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+                    isFirebaseInitialized = true;
+                    console.log("Firebase initialized from local storage");
+                    return true;
+                } catch (e) {
+                    console.error("Firebase init failed:", e);
+                    return false;
+                }
+            }
+            return false;
+        };
+
+        // 立即尝试初始化
+        initFirebase();
 
         // --- Icons ---
         const IconBase = ({ children, size = 20, className = "" }) => (
@@ -120,15 +89,15 @@
         const Settings = (p) => <IconBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></IconBase>;
         const Edit2 = (p) => <IconBase {...p}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></IconBase>;
         const Sparkles = (p) => <IconBase {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></IconBase>;
-        const Key = (p) => <IconBase {...p}><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></IconBase>;
         const Database = (p) => <IconBase {...p}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></IconBase>;
 
-        // --- AI Helper ---
+        // --- AI Helper (Late Binding - Only asks for key when used) ---
         const generateAIContent = async (prompt, text) => {
-            const apiKey = localStorage.getItem('gemini_key');
+            let apiKey = localStorage.getItem('gemini_key');
             if (!apiKey) {
-                alert("请先在左下角设置中配置 Google Gemini API Key");
-                return null;
+                apiKey = prompt("请输入您的 Google Gemini API Key 以启用 AI 功能：\n(密钥将仅保存在本地)");
+                if (apiKey) localStorage.setItem('gemini_key', apiKey);
+                else return null;
             }
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
@@ -143,64 +112,55 @@
                 return data.candidates[0].content.parts[0].text;
             } catch (e) {
                 console.error("AI Error:", e);
-                alert("AI 生成失败: " + e.message);
+                if (e.message.includes('API key not valid') || e.message.includes('403')) {
+                    localStorage.removeItem('gemini_key'); // Invalid key, remove it
+                    alert("API Key 无效或已过期，请重试。");
+                } else {
+                    alert("AI 生成失败: " + e.message);
+                }
                 return null;
             }
         };
 
-        // --- Config Modal (Fixes Auth Error) ---
+        // --- Config Modal (Firebase Setup) ---
         const ConfigModal = ({ onClose }) => {
             const [configStr, setConfigStr] = useState('');
             const handleSave = () => {
                 try {
-                    // Try to extract object from string like "const firebaseConfig = { ... }"
                     let jsonStr = configStr;
                     if (configStr.includes('=')) {
                         jsonStr = configStr.substring(configStr.indexOf('=') + 1).trim();
                         if (jsonStr.endsWith(';')) jsonStr = jsonStr.slice(0, -1);
                     }
-                    // Relaxed JSON parsing (allow unquoted keys if possible, but simplest is to ask user for clean object)
-                    // For safety, we just save what looks like the object part
-                    // Actually, the user usually copies the whole block.
-                    // Let's just save the string and let the user reload.
-                    // But to be safe, we need valid JSON. 
-                    // Let's guide the user to paste just the object or we try to parse it.
-                    // Since it's a JS object, JSON.parse might fail if keys aren't quoted.
-                    // Evaluation is risky but easiest for client-side purely personal app.
-                    // We will use a Function constructor to parse the JS object string safely-ish.
                     const parsed = new Function("return " + jsonStr)();
+                    if (!parsed.apiKey || !parsed.projectId) throw new Error("配置无效");
                     localStorage.setItem('firebase_config_override', JSON.stringify(parsed));
-                    alert("配置已更新！即将刷新页面...");
+                    alert("配置已保存！即将刷新...");
                     window.location.reload();
                 } catch (e) {
-                    alert("配置解析失败，请确保复制了完整的 { ... } 对象格式。\n\n错误: " + e.message);
+                    alert("配置解析失败，请确保复制了完整的 const firebaseConfig = { ... } 代码块。");
                 }
             };
 
             return (
-                <div className="fixed inset-0 bg-black bg-opacity-80 z-[70] flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-90 z-[80] flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
-                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-red-600"><Database size={24}/> 配置数据库</h3>
+                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-red-600"><Database size={24}/> 初始化数据库连接</h3>
                         <p className="text-sm text-slate-600 mb-4 leading-relaxed">
-                            检测到您更换了 API Key，但项目 ID 可能未同步，导致无法登录。
+                            这是您第一次使用知识库，请先连接您的 Firebase 后端。
                             <br/><br/>
-                            请前往 <b>Firebase Console -> Project Settings -> General -> Your apps</b>，
-                            复制整段 <code>const firebaseConfig = &#123; ... &#125;;</code> 代码并粘贴到下方：
+                            1. 前往 <a href="https://console.firebase.google.com/" target="_blank" class="text-blue-500 underline">Firebase Console</a><br/>
+                            2. 复制您的 Web App 配置 (SDK setup)<br/>
+                            3. 粘贴到下方：
                         </p>
                         <textarea 
                             className="w-full h-48 p-3 border border-slate-300 rounded-lg font-mono text-xs bg-slate-50 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none" 
-                            placeholder='const firebaseConfig = {
-  apiKey: "...",
-  authDomain: "...",
-  projectId: "...",
-  ...
-};'
+                            placeholder='const firebaseConfig = { ... };'
                             value={configStr}
                             onChange={e => setConfigStr(e.target.value)}
                         ></textarea>
                         <div className="flex justify-end gap-3">
-                            <button onClick={onClose} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded">取消</button>
-                            <button onClick={handleSave} className="px-6 py-2 bg-red-600 text-white rounded font-bold hover:bg-red-700 shadow-lg">保存并重启</button>
+                            <button onClick={handleSave} className="px-6 py-2 bg-red-600 text-white rounded font-bold hover:bg-red-700 shadow-lg">保存并连接</button>
                         </div>
                     </div>
                 </div>
@@ -209,16 +169,15 @@
 
         // --- Login Screen ---
         const LoginScreen = () => {
-            const [showConfig, setShowConfig] = useState(false);
+            const [showConfig, setShowConfig] = useState(!isFirebaseInitialized);
             const handleLogin = async () => {
                 if (!auth) { setShowConfig(true); return; }
                 try { 
                     await signInWithPopup(auth, new GoogleAuthProvider()); 
                 } catch (error) { 
                     console.error(error); 
-                    // 智能拦截配置错误
-                    if (error.code === 'auth/api-key-not-valid-please-pass-a-valid-api-key' || error.message.includes('identity-toolkit') || error.code === 'auth/network-request-failed') {
-                        if(confirm("登录连接失败。\n\n这通常是因为 API Key 与项目配置不匹配。\n\n是否打开配置面板重新粘贴配置？")) {
+                    if (error.code.includes('auth/')) {
+                        if(confirm("连接失败。您的 Firebase 配置可能不正确。\n\n是否重新配置？")) {
                             setShowConfig(true);
                         }
                     } else {
@@ -231,11 +190,15 @@
                     <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center relative">
                         <div className="mb-6 flex justify-center"><div className="bg-indigo-100 p-4 rounded-full"><BookOpen size={48} className="text-indigo-600" /></div></div>
                         <h1 className="text-2xl font-bold text-slate-900 mb-2">欢迎回来</h1>
-                        <p className="text-slate-500 mb-8">请登录以访问您的个人知识库 (云端同步)</p>
-                        <button onClick={handleLogin} className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-3 shadow-sm mb-4">使用 Google 账号登录</button>
+                        <p className="text-slate-500 mb-8">My LegalHub 个人知识库</p>
                         
-                        <button onClick={() => setShowConfig(true)} className="text-xs text-slate-400 hover:text-indigo-500 flex items-center justify-center gap-1 mx-auto">
-                            <Database size={12}/> 🛠️ 配置数据库连接
+                        <button onClick={handleLogin} className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-3 shadow-sm mb-4">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5"/>
+                            使用 Google 账号登录
+                        </button>
+                        
+                        <button onClick={() => setShowConfig(true)} className="text-xs text-slate-400 hover:text-indigo-500 flex items-center justify-center gap-1 mx-auto mt-6">
+                            <Database size={12}/> 重置数据库配置
                         </button>
                     </div>
                     {showConfig && <ConfigModal onClose={() => setShowConfig(false)} />}
@@ -243,14 +206,14 @@
             );
         };
 
-        // --- Settings Modal (AI Key) ---
+        // --- Settings Modal (Simple) ---
         const SettingsModal = ({ onClose }) => {
             const [key, setKey] = useState(localStorage.getItem('gemini_key') || '');
             const [dbConfigOpen, setDbConfigOpen] = useState(false);
             
             const handleSave = () => {
                 localStorage.setItem('gemini_key', key);
-                alert("AI 设置已保存");
+                alert("AI Key 已保存");
                 onClose();
             };
             return (
@@ -259,18 +222,14 @@
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
                         <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Settings size={20}/>设置</h3>
                         <div className="mb-6">
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Google Gemini API Key (AI 功能)</label>
-                            <input type="password" value={key} onChange={e => setKey(e.target.value)} className="w-full p-2 border rounded-lg" placeholder="在此粘贴 Gemini API Key" />
-                            <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-xs text-indigo-500 underline mt-1 block">获取免费 Key</a>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Gemini API Key (AI)</label>
+                            <input type="password" value={key} onChange={e => setKey(e.target.value)} className="w-full p-2 border rounded-lg" placeholder="在此粘贴 Gemini Key" />
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-xs text-indigo-500 underline mt-1 block">获取 Key</a>
                         </div>
-                        
                         <div className="border-t pt-4 mb-4">
-                            <h4 className="text-sm font-bold text-slate-700 mb-2">高级选项</h4>
-                            <button onClick={() => setDbConfigOpen(true)} className="text-xs text-red-500 border border-red-200 px-3 py-1.5 rounded hover:bg-red-50 flex items-center gap-1">
-                                <Database size={12}/> 重置 Firebase 数据库配置
-                            </button>
+                            <h4 className="text-sm font-bold text-slate-700 mb-2">危险区域</h4>
+                            <button onClick={() => setDbConfigOpen(true)} className="text-xs text-red-500 border border-red-200 px-3 py-1.5 rounded hover:bg-red-50 flex items-center gap-1"><Database size={12}/> 重置数据库配置</button>
                         </div>
-
                         <div className="flex justify-end gap-2">
                             <button onClick={onClose} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded">取消</button>
                             <button onClick={handleSave} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">保存</button>
@@ -280,6 +239,24 @@
             );
         };
 
+        // --- RECOMMENDED DATA ---
+        const RECOMMENDED_LINKS = [
+            { title: "SFC Codes and Guidelines", url: "https://www.sfc.hk/en/Regulatory-functions/Intermediaries/Licensing/Codes-and-guidelines", source: "SFC官网", tags: "法规 指引" },
+            { title: "HKEX Listing Rules", url: "https://en-rules.hkex.com.hk/", source: "HKEX", tags: "上市规则" },
+            { title: "SFC Newsletters", url: "https://www.sfc.hk/en/Published-resources/Newsletters", source: "SFC官网", tags: "监管动态" },
+            { title: "Webb-site", url: "https://webb-site.com/", source: "工具", tags: "尽调" },
+            { title: "HKLII", url: "https://www.hklii.org/en/", source: "工具", tags: "判例" },
+            { title: "金杜 (KWM) 观点", url: "https://www.kwm.com/hk/en/insights.html", source: "金杜", tags: "律所观点" },
+            { title: "汉坤 (Han Kun) 研究", url: "https://www.hankunlaw.com/en/portal/publication/index.html", source: "汉坤", tags: "律所观点" }
+        ];
+        const RECOMMENDED_OFFICIALS = [
+            { title: "SFC 证监会", url: "https://www.sfc.hk/", source: "SFC", tags: "监管" },
+            { title: "HKEX 港交所", url: "https://www.hkex.com.hk/", source: "HKEX", tags: "交易所" },
+            { title: "HKMA 金管局", url: "https://www.hkma.gov.hk/", source: "HKMA", tags: "银行" },
+            { title: "e-Legislation 电子法例", url: "https://www.elegislation.gov.hk/", source: "政府", tags: "法例" }
+        ];
+
+        // --- Sidebar ---
         const Sidebar = ({ activeTab, setActiveTab, isMobileMenuOpen, setIsMobileMenuOpen, user }) => {
             const [showSettings, setShowSettings] = useState(false);
             const menuItems = [
@@ -306,16 +283,12 @@
             );
         };
 
-        // --- Category Manager Modal ---
+        // --- Category Manager ---
         const CategoryManager = ({ user, categories, onClose }) => {
             const [localCats, setLocalCats] = useState(categories);
-            const [editingCat, setEditingCat] = useState(null);
-            const [editName, setEditName] = useState("");
-
             useEffect(() => setLocalCats(categories), [categories]);
-
             const handleRename = async (oldName) => {
-                const newName = prompt(`将分类 "${oldName}" 重命名为:`, oldName);
+                const newName = prompt(`重命名 "${oldName}" 为:`, oldName);
                 if (!newName || newName === oldName) return;
                 const q = query(collection(db, 'users', user.uid, 'notes'), where("category", "==", oldName));
                 const snapshot = await getDocs(q);
@@ -324,19 +297,16 @@
                 await batch.commit();
                 alert(`更新完成`);
             };
-
             const handleDelete = async (catName) => {
-                if (!confirm(`确定删除分类 "${catName}" 吗？笔记将移至“未分类”。`)) return;
+                if (!confirm(`删除分类 "${catName}"？笔记将移至“未分类”。`)) return;
                 const q = query(collection(db, 'users', user.uid, 'notes'), where("category", "==", catName));
                 const snapshot = await getDocs(q);
                 const batch = writeBatch(db);
                 snapshot.docs.forEach(d => { batch.update(doc(db, 'users', user.uid, 'notes', d.id), { category: "未分类" }); });
                 await batch.commit();
-                alert("分类已删除");
+                alert("已删除");
             };
-
-            const handleAdd = async () => { alert(`提示：只需在写笔记时直接输入新分类名，该分类就会自动创建并保存。`); };
-
+            const handleAdd = () => alert("提示：在写笔记时直接输入新分类名即可自动创建。");
             return (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 max-h-[80vh] flex flex-col">
@@ -348,6 +318,7 @@
             );
         };
 
+        // --- Modules ---
         const NotesModule = ({ user }) => {
             const [notes, setNotes] = useState([]);
             const [newNote, setNewNote] = useState({ content: '', category: '金融法律知识' });
@@ -359,7 +330,6 @@
             const [heatmapRange, setHeatmapRange] = useState('year'); 
             const [showCatManager, setShowCatManager] = useState(false);
             const [aiLoading, setAiLoading] = useState(false);
-
             const defaultCategories = ["金融法律知识", "金融知识", "数据法知识", "其他法律知识", "杂项"];
 
             useEffect(() => {
@@ -370,7 +340,6 @@
                     setNotes(docs);
                     const usedCategories = new Set(docs.map(n => n.category).filter(Boolean));
                     setAvailableCategories(Array.from(new Set([...defaultCategories, ...usedCategories])).sort());
-                    
                     const now = new Date();
                     const todayStr = now.toDateString();
                     let todayCount = 0;
@@ -382,8 +351,7 @@
                             if (d.toDateString() === todayStr) todayCount++;
                         }
                     });
-                    let streak = 0;
-                    let checkDate = new Date();
+                    let streak = 0; let checkDate = new Date();
                     if (!map[checkDate.toDateString()]) checkDate.setDate(checkDate.getDate() - 1);
                     while (map[checkDate.toDateString()] > 0) { streak++; checkDate.setDate(checkDate.getDate() - 1); }
                     setStats({ total: docs.length, today: todayCount, streak });
@@ -395,37 +363,23 @@
             const handleAdd = async () => {
                 if (!newNote.content.trim()) return;
                 if (isAddingCategory && !newNote.category.trim()) { alert("请输入新分类名称"); return; }
-                try {
-                    await addDoc(collection(db, 'users', user.uid, 'notes'), { content: newNote.content, category: newNote.category, createdAt: serverTimestamp() });
-                    setNewNote(prev => ({ ...prev, content: '' }));
-                    setIsAddingCategory(false);
-                } catch (e) { console.error(e); }
+                try { await addDoc(collection(db, 'users', user.uid, 'notes'), { content: newNote.content, category: newNote.category, createdAt: serverTimestamp() }); setNewNote(prev => ({ ...prev, content: '' })); setIsAddingCategory(false); } catch (e) { console.error(e); }
             };
-
             const handleAIPolish = async () => {
                 if (!newNote.content.trim()) return;
                 setAiLoading(true);
-                const polished = await generateAIContent("请将以下笔记内容进行润色，使其更加条理清晰、专业，如果是知识点请补充相关背景：", newNote.content);
+                const polished = await generateAIContent("润色以下笔记，使其条理清晰：", newNote.content);
                 if (polished) setNewNote(prev => ({ ...prev, content: polished }));
                 setAiLoading(false);
             };
-
             const handleDelete = async (id) => { if (confirm('删除？')) await deleteDoc(doc(db, 'users', user.uid, 'notes', id)); };
             const filteredNotes = notes.filter(n => (n.content || '').toLowerCase().includes(search.toLowerCase()) || (n.category || '').toLowerCase().includes(search.toLowerCase()));
-
             const renderHeatmap = () => {
                 let daysToRender = 365; let isGrid = true;
-                if (heatmapRange === 'week') { daysToRender = 7; isGrid = false; }
-                else if (heatmapRange === 'month') { daysToRender = 30; isGrid = false; }
-                else if (heatmapRange === 'year') { daysToRender = 365; isGrid = true; }
-                else if (heatmapRange === '3year') { daysToRender = 365 * 3; isGrid = true; }
-                const days = [];
-                for (let i = daysToRender - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d); }
-                if (!isGrid) {
-                    return (<div className="flex flex-wrap gap-1.5">{days.map((day, idx) => { const count = activityMap[day.toDateString()] || 0; let color = "bg-slate-100"; if (count > 0) color = "bg-red-200"; if (count > 2) color = "bg-red-400"; if (count > 5) color = "bg-red-600"; return <div key={idx} title={`${day.toLocaleDateString()}: ${count}`} className={`w-4 h-4 rounded-sm ${color}`}></div>; })}</div>);
-                } else {
-                    return (<div className="overflow-x-auto no-scrollbar pb-2"><div className="grid grid-rows-7 grid-flow-col gap-1 w-max">{days.map((day, idx) => { const count = activityMap[day.toDateString()] || 0; let color = "bg-slate-100"; if (count > 0) color = "bg-red-200"; if (count > 2) color = "bg-red-400"; if (count > 5) color = "bg-red-600"; return <div key={idx} title={`${day.toLocaleDateString()}: ${count}`} className={`w-3 h-3 rounded-sm ${color}`}></div>; })}</div></div>);
-                }
+                if (heatmapRange === 'week') { daysToRender = 7; isGrid = false; } else if (heatmapRange === 'month') { daysToRender = 30; isGrid = false; } else if (heatmapRange === 'year') { daysToRender = 365; isGrid = true; } else if (heatmapRange === '3year') { daysToRender = 365 * 3; isGrid = true; }
+                const days = []; for (let i = daysToRender - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d); }
+                if (!isGrid) { return (<div className="flex flex-wrap gap-1.5">{days.map((day, idx) => { const count = activityMap[day.toDateString()] || 0; let color = "bg-slate-100"; if (count > 0) color = "bg-red-200"; if (count > 2) color = "bg-red-400"; if (count > 5) color = "bg-red-600"; return <div key={idx} title={`${day.toLocaleDateString()}: ${count}`} className={`w-4 h-4 rounded-sm ${color}`}></div>; })}</div>); } 
+                else { return (<div className="overflow-x-auto no-scrollbar pb-2"><div className="grid grid-rows-7 grid-flow-col gap-1 w-max">{days.map((day, idx) => { const count = activityMap[day.toDateString()] || 0; let color = "bg-slate-100"; if (count > 0) color = "bg-red-200"; if (count > 2) color = "bg-red-400"; if (count > 5) color = "bg-red-600"; return <div key={idx} title={`${day.toLocaleDateString()}: ${count}`} className={`w-3 h-3 rounded-sm ${color}`}></div>; })}</div></div>); }
             };
 
             return (
@@ -445,8 +399,8 @@
                                 <div className="space-y-3 flex-1 flex flex-col">
                                     <div className="flex gap-2 items-center">
                                         {isAddingCategory ? (<input className="flex-1 p-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="输入新分类名称..." value={newNote.category} onChange={e => setNewNote({...newNote, category: e.target.value})} autoFocus />) : (<div className="relative flex-1"><select className="w-full p-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none font-medium text-slate-600" value={newNote.category} onChange={e => setNewNote({...newNote, category: e.target.value})}>{availableCategories.map(c => <option key={c} value={c}>{c}</option>)}</select><div className="absolute right-3 top-3 text-slate-400 pointer-events-none text-xs">▼</div></div>)}
-                                        <button onClick={() => { setIsAddingCategory(!isAddingCategory); if (!isAddingCategory) setNewNote(prev => ({ ...prev, category: '' })); else setNewNote(prev => ({ ...prev, category: availableCategories[0] || '杂项' })); }} className={`p-2.5 rounded-lg border transition-colors ${isAddingCategory ? 'bg-slate-200 text-slate-600 border-slate-300' : 'bg-white border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-500'}`} title={isAddingCategory ? "取消" : "手动输入分类"}>{isAddingCategory ? <X size={16}/> : <Plus size={16}/>}</button>
-                                        <button onClick={() => setShowCatManager(true)} className="p-2.5 rounded-lg border bg-white border-slate-200 text-slate-400 hover:text-indigo-500 hover:border-indigo-500 transition-colors" title="管理分类"><Settings size={16}/></button>
+                                        <button onClick={() => { setIsAddingCategory(!isAddingCategory); if (!isAddingCategory) setNewNote(prev => ({ ...prev, category: '' })); else setNewNote(prev => ({ ...prev, category: availableCategories[0] || '杂项' })); }} className={`p-2.5 rounded-lg border transition-colors ${isAddingCategory ? 'bg-slate-200 text-slate-600 border-slate-300' : 'bg-white border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-500'}`}>{isAddingCategory ? <X size={16}/> : <Plus size={16}/>}</button>
+                                        <button onClick={() => setShowCatManager(true)} className="p-2.5 rounded-lg border bg-white border-slate-200 text-slate-400 hover:text-indigo-500 hover:border-indigo-500 transition-colors"><Settings size={16}/></button>
                                     </div>
                                     <div className="relative flex-1">
                                         <textarea className="w-full h-full p-3 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none" placeholder="在此处输入笔记内容..." value={newNote.content} onChange={e => setNewNote({...newNote, content: e.target.value})}></textarea>
@@ -469,30 +423,6 @@
             );
         };
 
-        const AISummarizerModal = ({ onClose, onSave }) => {
-            const [text, setText] = useState('');
-            const [loading, setLoading] = useState(false);
-            const handleGenerate = async () => {
-                if (!text.trim()) return;
-                setLoading(true);
-                const summary = await generateAIContent("请把以下法律文章内容总结为3-5个关键点（Markdown格式），重点突出监管要求和对业务的影响：", text);
-                if (summary) onSave(summary);
-                setLoading(false);
-            };
-            return (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 flex flex-col h-[500px]">
-                        <div className="flex justify-between items-center mb-4"><h3 className="text-lg font-bold flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600"><Sparkles size={20} className="text-indigo-500"/> AI 智能总结</h3><button onClick={onClose}><X size={20} className="text-slate-400 hover:text-slate-600"/></button></div>
-                        <p className="text-sm text-slate-500 mb-2">请粘贴文章内容，AI 将为您生成摘要：</p>
-                        <textarea className="flex-1 p-3 border rounded-lg mb-4 resize-none bg-slate-50 focus:bg-white transition-colors" placeholder="粘贴文章正文..." value={text} onChange={e => setText(e.target.value)}></textarea>
-                        <button onClick={handleGenerate} disabled={loading} className={`w-full py-3 rounded-lg text-white font-medium flex items-center justify-center gap-2 ${loading ? 'bg-slate-400' : 'bg-ai-gradient hover:opacity-90'}`}>
-                            {loading ? 'AI 思考中...' : <><Sparkles size={18}/> 生成总结并保存</>}
-                        </button>
-                    </div>
-                </div>
-            );
-        };
-
         const ArticlesModule = ({ user }) => {
             const [articles, setArticles] = useState([]);
             const [showModal, setShowModal] = useState(false);
@@ -500,25 +430,23 @@
             const [searchTerm, setSearchTerm] = useState('');
             const [importing, setImporting] = useState(false);
             const [summarizingId, setSummarizingId] = useState(null);
-
-            useEffect(() => {
-                if (!user || !db) return;
-                const q = query(collection(db, 'users', user.uid, 'articles'), orderBy('createdAt', 'desc'));
-                const unsubscribe = onSnapshot(q, (snapshot) => { setArticles(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); });
-                return () => unsubscribe();
-            }, [user]);
-
+            useEffect(() => { if (!user || !db) return; const q = query(collection(db, 'users', user.uid, 'articles'), orderBy('createdAt', 'desc')); const unsubscribe = onSnapshot(q, (snapshot) => { setArticles(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); }); return () => unsubscribe(); }, [user]);
             const handleAdd = async (e) => { e.preventDefault(); if (!newArticle.title || !newArticle.url) return; await addDoc(collection(db, 'users', user.uid, 'articles'), { ...newArticle, createdAt: serverTimestamp() }); setNewArticle({ title: '', url: '', source: '', tags: '' }); setShowModal(false); };
-            const handleDelete = async (id) => { if (confirm('确定删除？')) await deleteDoc(doc(db, 'users', user.uid, 'articles', id)); };
+            const handleDelete = async (id) => { if (confirm('删除？')) await deleteDoc(doc(db, 'users', user.uid, 'articles', id)); };
             const handleImportRecommended = async () => { if (!confirm(`确定导入 ${RECOMMENDED_LINKS.length} 条推荐？`)) return; setImporting(true); try { const batch = writeBatch(db); RECOMMENDED_LINKS.forEach(link => { const docRef = doc(collection(db, 'users', user.uid, 'articles')); batch.set(docRef, { ...link, createdAt: serverTimestamp() }); }); await batch.commit(); alert("导入成功！"); } catch (e) { console.error(e); alert("导入失败"); } setImporting(false); };
+            const handleSaveSummary = async (summary) => { if (!summarizingId) return; await updateDoc(doc(db, 'users', user.uid, 'articles', summarizingId), { summary }); setSummarizingId(null); };
+            const filtered = articles.filter(item => (item.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (item.tags || '').toLowerCase().includes(searchTerm.toLowerCase()));
             
-            const handleSaveSummary = async (summary) => {
-                if (!summarizingId) return;
-                await updateDoc(doc(db, 'users', user.uid, 'articles', summarizingId), { summary });
-                setSummarizingId(null);
+            // AI 摘要弹窗组件
+            const AISummarizerModal = ({ onClose, onSave }) => {
+                const [text, setText] = useState('');
+                const [loading, setLoading] = useState(false);
+                const handleGenerate = async () => { if (!text.trim()) return; setLoading(true); const summary = await generateAIContent("总结要点(Markdown):", text); if (summary) onSave(summary); setLoading(false); };
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center p-4"><div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 flex flex-col h-[500px]"><div className="flex justify-between items-center mb-4"><h3 className="text-lg font-bold flex items-center gap-2"><Sparkles size={20} className="text-indigo-500"/> AI 总结</h3><button onClick={onClose}><X size={20}/></button></div><textarea className="flex-1 p-3 border rounded-lg mb-4 resize-none" placeholder="粘贴文章..." value={text} onChange={e => setText(e.target.value)}></textarea><button onClick={handleGenerate} disabled={loading} className="w-full py-3 rounded-lg text-white font-medium bg-ai-gradient">{loading ? 'Thinking...' : '生成'}</button></div></div>
+                );
             };
 
-            const filtered = articles.filter(item => (item.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (item.tags || '').toLowerCase().includes(searchTerm.toLowerCase()));
             return (
                 <div className="h-full flex flex-col p-6 overflow-hidden">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4"><div><h2 className="text-2xl font-bold text-slate-800">律所文章库</h2><p className="text-slate-500 text-sm">SFC Compliance & Insights</p></div><div className="flex gap-2"><button onClick={handleImportRecommended} disabled={importing} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm text-sm"><DownloadCloud size={16} /> {importing ? '导入中...' : '一键导入'}</button><button onClick={() => setShowModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm text-sm"><Plus size={16} /> 新增文章</button></div></div>
@@ -526,14 +454,8 @@
                     <div className="flex-1 overflow-y-auto pr-2 space-y-3">{filtered.map(article => (
                         <div key={article.id} className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-md transition-shadow group">
                             <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1"><span className={`text-xs px-2 py-0.5 rounded font-medium ${article.source?.includes('SFC') ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{article.source || '未分类'}</span><a href={article.url} target="_blank" className="font-semibold text-slate-800 hover:text-indigo-600 truncate flex items-center gap-1">{article.title} <ExternalLink size={14} className="opacity-50" /></a></div>
-                                    <div className="flex flex-wrap gap-2 mt-2">{article.tags.split(' ').map((t,i) => t && <span key={i} className="text-xs text-indigo-500 bg-indigo-50 px-2 py-1 rounded">#{t}</span>)}</div>
-                                </div>
-                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => setSummarizingId(article.id)} className="text-purple-500 hover:text-purple-700 p-1" title="AI 总结"><Sparkles size={16}/></button>
-                                    <button onClick={() => handleDelete(article.id)} className="text-slate-300 hover:text-red-500 p-1"><Trash2 size={16} /></button>
-                                </div>
+                                <div className="flex-1"><div className="flex items-center gap-2 mb-1"><span className={`text-xs px-2 py-0.5 rounded font-medium ${article.source?.includes('SFC') ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{article.source || '未分类'}</span><a href={article.url} target="_blank" className="font-semibold text-slate-800 hover:text-indigo-600 truncate flex items-center gap-1">{article.title} <ExternalLink size={14} className="opacity-50" /></a></div><div className="flex flex-wrap gap-2 mt-2">{article.tags.split(' ').map((t,i) => t && <span key={i} className="text-xs text-indigo-500 bg-indigo-50 px-2 py-1 rounded">#{t}</span>)}</div></div>
+                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setSummarizingId(article.id)} className="text-purple-500 hover:text-purple-700 p-1"><Sparkles size={16}/></button><button onClick={() => handleDelete(article.id)} className="text-slate-300 hover:text-red-500 p-1"><Trash2 size={16} /></button></div>
                             </div>
                             {article.summary && <div className="mt-3 p-3 bg-indigo-50 rounded-lg text-sm text-slate-700 border border-indigo-100"><div className="flex items-center gap-1 text-indigo-600 font-bold mb-1 text-xs"><Sparkles size={12}/> AI 摘要</div><div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{__html: marked.parse(article.summary)}}></div></div>}
                         </div>
@@ -543,9 +465,7 @@
                 </div>
             );
         };
-        
-        // ... OfficialModule, SocialsModule, SystemKnowledgeModule remain same ...
-        // Re-declaring simpler components to keep file complete for copy-paste
+
         const OfficialModule = ({ user }) => {
             const [links, setLinks] = useState([]);
             const [showModal, setShowModal] = useState(false);
@@ -582,41 +502,16 @@
             );
         };
 
-        const SystemKnowledgeModule = ({ user }) => {
-            const [topics, setTopics] = useState([]);
-            const [activeTopic, setActiveTopic] = useState(null);
-            const [isEditing, setIsEditing] = useState(false);
-            const [editContent, setEditContent] = useState('');
-            const [newTopicName, setNewTopicName] = useState('');
-            const [toc, setToc] = useState([]);
-            useEffect(() => { if (!user || !db) return; const q = query(collection(db, 'users', user.uid, 'knowledge'), orderBy('createdAt', 'desc')); const unsubscribe = onSnapshot(q, (snapshot) => { setTopics(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); }); return () => unsubscribe(); }, [user]);
-            const currentTopicData = useMemo(() => topics.find(t => t.id === activeTopic), [topics, activeTopic]);
-            useEffect(() => { if (currentTopicData && !isEditing) { const headings = []; const safeContent = typeof currentTopicData.content === 'string' ? currentTopicData.content : ''; const lines = safeContent.split('\n'); lines.forEach((line) => { const match = line.match(/^(#{1,3})\s*(.+)$/); if (match) { const level = match[1].length; const text = match[2]; const id = 'heading-' + Math.random().toString(36).substr(2, 9); headings.push({ id, text, level }); } }); setToc(headings); } }, [currentTopicData, isEditing]);
-            const getMarkdownHtml = (content) => { if (!content) return ''; if (typeof content !== 'string') return 'Error: Content is not text.'; if (content.includes('[object Object]')) { return '<div class="p-4 bg-red-50 text-red-600 rounded">检测到数据异常 (包含 [object Object])。请点击右上角“编辑”，手动删除该行文字。</div>' + marked.parse(content.replace(/\[object Object\]/g, '')); } let headingIndex = 0; const renderer = new marked.Renderer(); renderer.heading = (text, level) => { const id = toc[headingIndex] ? toc[headingIndex].id : ''; headingIndex++; return `<h${level} id="${id}">${text}</h${level}>`; }; return marked.parse(content, { renderer }); };
-            const scrollToHeading = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); };
-            const handleAddTopic = async () => { if (!newTopicName.trim()) return; const res = await addDoc(collection(db, 'users', user.uid, 'knowledge'), { title: newTopicName, content: '# ' + newTopicName + '\n\n开始撰写...', createdAt: serverTimestamp() }); setNewTopicName(''); setActiveTopic(res.id); };
-            const handleSaveContent = async () => { if (!activeTopic) return; await updateDoc(doc(db, 'users', user.uid, 'knowledge', activeTopic), { content: editContent, updatedAt: serverTimestamp() }); setIsEditing(false); };
-            const handleDeleteTopic = async (e, id) => { e.stopPropagation(); if(confirm('删除？')) { if (activeTopic === id) setActiveTopic(null); await deleteDoc(doc(db, 'users', user.uid, 'knowledge', id)); } };
-            return (
-                <div className="h-full flex flex-col md:flex-row bg-white">
-                    <div className="w-full md:w-64 border-r border-slate-200 flex flex-col bg-slate-50">
-                        <div className="p-4 border-b border-slate-200"><h2 className="font-bold text-slate-700 flex items-center gap-2"><FolderOpen size={18} /> 知识体系</h2></div>
-                        <div className="flex-1 overflow-y-auto p-2 space-y-1">{topics.map(topic => (<div key={topic.id} onClick={() => { setActiveTopic(topic.id); setIsEditing(false); }} className={`group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer text-sm ${activeTopic === topic.id ? 'bg-white shadow-sm text-indigo-600 border border-slate-200' : 'text-slate-600 hover:bg-slate-100'}`}><span className="truncate flex-1">{topic.title}</span><button onClick={(e) => handleDeleteTopic(e, topic.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500"><Trash2 size={14} /></button></div>))}</div>
-                        <div className="p-3 border-t border-slate-200 flex gap-2"><input className="flex-1 px-2 py-1 text-sm border rounded" placeholder="新主题..." value={newTopicName} onChange={e => setNewTopicName(e.target.value)} /><button onClick={handleAddTopic} className="bg-indigo-600 text-white p-1.5 rounded"><Plus size={16} /></button></div>
-                    </div>
-                    <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-                        {activeTopic && currentTopicData ? (<><div className="p-4 border-b border-slate-200 flex justify-between items-center bg-white"><span className="text-slate-500 text-xs">上次更新: {new Date().toLocaleDateString()}</span>{isEditing ? (<div className="flex gap-2"><button onClick={() => setIsEditing(false)} className="px-3 py-1.5 text-sm rounded hover:bg-slate-100">取消</button><button onClick={handleSaveContent} className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded">保存</button></div>) : (<button onClick={() => { setEditContent(currentTopicData.content); setIsEditing(true); }} className="px-3 py-1.5 text-sm border rounded hover:bg-slate-50 flex items-center gap-1"><PenTool size={14} /> 编辑</button>)}</div><div className="flex-1 overflow-y-auto p-8 bg-white flex flex-row"><div className="flex-1 pr-4 max-w-4xl">{isEditing ? <textarea className="w-full h-full resize-none outline-none font-mono text-sm leading-relaxed p-4 bg-slate-50 rounded" value={editContent} onChange={e => setEditContent(e.target.value)} /> : <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: getMarkdownHtml(currentTopicData.content) }}></div>}</div>{!isEditing && toc.length > 0 && (<div className="w-48 pl-4 border-l border-slate-100 hidden lg:block overflow-y-auto max-h-screen sticky top-0"><div className="text-xs font-bold text-slate-400 mb-2 uppercase">目录 (TOC)</div><ul className="space-y-2">{toc.map((h, i) => (<li key={i} className={`text-xs cursor-pointer hover:text-indigo-600 transition-colors ${h.level === 1 ? 'font-bold' : 'pl-2 text-slate-500'}`} onClick={() => scrollToHeading(h.id)}>{h.text}</li>))}</ul></div>)}</div></>) : (<div className="flex-1 flex items-center justify-center text-slate-400 flex-col gap-4"><Layers size={48} className="opacity-20" /><p>请选择或创建一个知识主题</p></div>)}
-                    </div>
-                </div>
-            );
-        };
-
         const App = () => {
             const [user, setUser] = useState(null);
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('notes'); 
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-            useEffect(() => { if (!auth) { setLoading(false); return; } const unsubscribe = onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); }); return () => unsubscribe(); }, []);
+            useEffect(() => { 
+                if (!auth) { setLoading(false); return; } 
+                const unsubscribe = onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); }); 
+                return () => unsubscribe(); 
+            }, []);
             if (loading) return <div className="flex h-screen items-center justify-center">加载中...</div>;
             if (!user) return <LoginScreen />;
             return (
