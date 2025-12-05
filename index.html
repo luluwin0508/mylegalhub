@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My LegalHub - 个人知识库 (v1.8.1 AI)</title>
+    <title>My LegalHub - 个人知识库 (v1.8.2 Dynamic)</title>
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -23,7 +23,6 @@
         .toc-active { color: #4f46e5; font-weight: 600; border-left: 2px solid #4f46e5; padding-left: 8px; margin-left: -10px; background-color: #f5f3ff; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        /* AI Gradient Animation */
         .bg-ai-gradient { background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%); }
     </style>
 </head>
@@ -31,16 +30,29 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        const firebaseConfig = {
-            apiKey: "AIzaSyD97uLp5vF7-8hlWocFX1rVxxqemOR4Pvc",
+        // 默认配置 (作为兜底，但优先使用 LocalStorage 中的配置)
+        const DEFAULT_CONFIG = {
+            apiKey: "AIzaSyD97uLp5vF7-8hlWocFX1rVxxqemOR4Pvc", // 用户提供的新 Key
             authDomain: "my-legal-hub.firebaseapp.com",
             projectId: "my-legal-hub",
             storageBucket: "my-legal-hub.firebasestorage.app",
-            messagingSenderId: "789750197180",
+            messagingSenderId: "789750197180", // 注意：这可能与新 Key 不匹配
             appId: "1:789750197180:web:b316b0265a2cafd1ca19b9",
             measurementId: "G-TRRH7MS9Z8"
         };
 
+        // 尝试从本地存储加载配置，否则使用默认
+        const getStoredConfig = () => {
+            const stored = localStorage.getItem('firebase_config_override');
+            if (stored) {
+                try { return JSON.parse(stored); } catch (e) { console.error("Config parse error", e); return DEFAULT_CONFIG; }
+            }
+            return DEFAULT_CONFIG;
+        };
+
+        const firebaseConfig = getStoredConfig();
+
+        // --- 推荐资源库 ---
         const RECOMMENDED_LINKS = [
             { title: "SFC Codes and Guidelines", url: "https://www.sfc.hk/en/Regulatory-functions/Intermediaries/Licensing/Codes-and-guidelines", source: "SFC官网", tags: "法规 指引" },
             { title: "HKEX Listing Rules (主板上市规则)", url: "https://en-rules.hkex.com.hk/", source: "HKEX", tags: "上市规则 IPO" },
@@ -80,7 +92,7 @@
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Init Error", e); }
 
         // --- Icons ---
         const IconBase = ({ children, size = 20, className = "" }) => (
@@ -109,6 +121,7 @@
         const Edit2 = (p) => <IconBase {...p}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></IconBase>;
         const Sparkles = (p) => <IconBase {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></IconBase>;
         const Key = (p) => <IconBase {...p}><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></IconBase>;
+        const Database = (p) => <IconBase {...p}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></IconBase>;
 
         // --- AI Helper ---
         const generateAIContent = async (prompt, text) => {
@@ -135,47 +148,134 @@
             }
         };
 
-        // --- Login Screen ---
-        const LoginScreen = () => {
-            const handleLogin = async () => {
-                if (!auth) { alert("Firebase 初始化失败"); return; }
-                try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (error) { console.error(error); alert("登录失败: " + error.message); }
+        // --- Config Modal (Fixes Auth Error) ---
+        const ConfigModal = ({ onClose }) => {
+            const [configStr, setConfigStr] = useState('');
+            const handleSave = () => {
+                try {
+                    // Try to extract object from string like "const firebaseConfig = { ... }"
+                    let jsonStr = configStr;
+                    if (configStr.includes('=')) {
+                        jsonStr = configStr.substring(configStr.indexOf('=') + 1).trim();
+                        if (jsonStr.endsWith(';')) jsonStr = jsonStr.slice(0, -1);
+                    }
+                    // Relaxed JSON parsing (allow unquoted keys if possible, but simplest is to ask user for clean object)
+                    // For safety, we just save what looks like the object part
+                    // Actually, the user usually copies the whole block.
+                    // Let's just save the string and let the user reload.
+                    // But to be safe, we need valid JSON. 
+                    // Let's guide the user to paste just the object or we try to parse it.
+                    // Since it's a JS object, JSON.parse might fail if keys aren't quoted.
+                    // Evaluation is risky but easiest for client-side purely personal app.
+                    // We will use a Function constructor to parse the JS object string safely-ish.
+                    const parsed = new Function("return " + jsonStr)();
+                    localStorage.setItem('firebase_config_override', JSON.stringify(parsed));
+                    alert("配置已更新！即将刷新页面...");
+                    window.location.reload();
+                } catch (e) {
+                    alert("配置解析失败，请确保复制了完整的 { ... } 对象格式。\n\n错误: " + e.message);
+                }
             };
+
             return (
-                <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
-                    <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-                        <div className="mb-6 flex justify-center"><div className="bg-indigo-100 p-4 rounded-full"><BookOpen size={48} className="text-indigo-600" /></div></div>
-                        <h1 className="text-2xl font-bold text-slate-900 mb-2">欢迎回来</h1>
-                        <p className="text-slate-500 mb-8">请登录以访问您的个人知识库 (云端同步)</p>
-                        <button onClick={handleLogin} className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-3 shadow-sm">使用 Google 账号登录</button>
+                <div className="fixed inset-0 bg-black bg-opacity-80 z-[70] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-red-600"><Database size={24}/> 配置数据库</h3>
+                        <p className="text-sm text-slate-600 mb-4 leading-relaxed">
+                            检测到您更换了 API Key，但项目 ID 可能未同步，导致无法登录。
+                            <br/><br/>
+                            请前往 <b>Firebase Console -> Project Settings -> General -> Your apps</b>，
+                            复制整段 <code>const firebaseConfig = &#123; ... &#125;;</code> 代码并粘贴到下方：
+                        </p>
+                        <textarea 
+                            className="w-full h-48 p-3 border border-slate-300 rounded-lg font-mono text-xs bg-slate-50 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none" 
+                            placeholder='const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  ...
+};'
+                            value={configStr}
+                            onChange={e => setConfigStr(e.target.value)}
+                        ></textarea>
+                        <div className="flex justify-end gap-3">
+                            <button onClick={onClose} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded">取消</button>
+                            <button onClick={handleSave} className="px-6 py-2 bg-red-600 text-white rounded font-bold hover:bg-red-700 shadow-lg">保存并重启</button>
+                        </div>
                     </div>
                 </div>
             );
         };
 
-        // --- Settings Modal ---
+        // --- Login Screen ---
+        const LoginScreen = () => {
+            const [showConfig, setShowConfig] = useState(false);
+            const handleLogin = async () => {
+                if (!auth) { setShowConfig(true); return; }
+                try { 
+                    await signInWithPopup(auth, new GoogleAuthProvider()); 
+                } catch (error) { 
+                    console.error(error); 
+                    // 智能拦截配置错误
+                    if (error.code === 'auth/api-key-not-valid-please-pass-a-valid-api-key' || error.message.includes('identity-toolkit') || error.code === 'auth/network-request-failed') {
+                        if(confirm("登录连接失败。\n\n这通常是因为 API Key 与项目配置不匹配。\n\n是否打开配置面板重新粘贴配置？")) {
+                            setShowConfig(true);
+                        }
+                    } else {
+                        alert("登录失败: " + error.message); 
+                    }
+                }
+            };
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
+                    <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center relative">
+                        <div className="mb-6 flex justify-center"><div className="bg-indigo-100 p-4 rounded-full"><BookOpen size={48} className="text-indigo-600" /></div></div>
+                        <h1 className="text-2xl font-bold text-slate-900 mb-2">欢迎回来</h1>
+                        <p className="text-slate-500 mb-8">请登录以访问您的个人知识库 (云端同步)</p>
+                        <button onClick={handleLogin} className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-3 shadow-sm mb-4">使用 Google 账号登录</button>
+                        
+                        <button onClick={() => setShowConfig(true)} className="text-xs text-slate-400 hover:text-indigo-500 flex items-center justify-center gap-1 mx-auto">
+                            <Database size={12}/> 🛠️ 配置数据库连接
+                        </button>
+                    </div>
+                    {showConfig && <ConfigModal onClose={() => setShowConfig(false)} />}
+                </div>
+            );
+        };
+
+        // --- Settings Modal (AI Key) ---
         const SettingsModal = ({ onClose }) => {
             const [key, setKey] = useState(localStorage.getItem('gemini_key') || '');
+            const [dbConfigOpen, setDbConfigOpen] = useState(false);
+            
             const handleSave = () => {
                 localStorage.setItem('gemini_key', key);
-                alert("API Key 已保存");
+                alert("AI 设置已保存");
                 onClose();
             };
             return (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center p-4">
+                    {dbConfigOpen ? <ConfigModal onClose={() => setDbConfigOpen(false)}/> : 
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
                         <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Settings size={20}/>设置</h3>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Google Gemini API Key</label>
-                            <input type="password" value={key} onChange={e => setKey(e.target.value)} className="w-full p-2 border rounded-lg" placeholder="在此粘贴您的 API Key" />
-                            <p className="text-xs text-slate-500 mt-2">您的密钥仅保存在本地浏览器中，用于调用 AI 功能。</p>
-                            <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-xs text-indigo-500 underline mt-1 block">获取免费 API Key</a>
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Google Gemini API Key (AI 功能)</label>
+                            <input type="password" value={key} onChange={e => setKey(e.target.value)} className="w-full p-2 border rounded-lg" placeholder="在此粘贴 Gemini API Key" />
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-xs text-indigo-500 underline mt-1 block">获取免费 Key</a>
                         </div>
+                        
+                        <div className="border-t pt-4 mb-4">
+                            <h4 className="text-sm font-bold text-slate-700 mb-2">高级选项</h4>
+                            <button onClick={() => setDbConfigOpen(true)} className="text-xs text-red-500 border border-red-200 px-3 py-1.5 rounded hover:bg-red-50 flex items-center gap-1">
+                                <Database size={12}/> 重置 Firebase 数据库配置
+                            </button>
+                        </div>
+
                         <div className="flex justify-end gap-2">
                             <button onClick={onClose} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded">取消</button>
                             <button onClick={handleSave} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">保存</button>
                         </div>
-                    </div>
+                    </div>}
                 </div>
             );
         };
